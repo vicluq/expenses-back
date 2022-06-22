@@ -1,49 +1,82 @@
-const ExpensesService = require('../services/expenses');
+const ExpensesService = require("../services/expenses.service");
+const { validateExpense } = require("../utils/validations");
 
+// OK
 exports.getAll = function (req, res) {
-    return res.status(200).json(ExpensesService.getAll());
-}
+  ExpensesService.getAll()
+    .then((expenses) => {
+      res.status(200).json(expenses);
+    })
+    .catch((err) => {
+      res.status(500).send({ error: true, message: err });
+    });
+};
 
+// OK
 exports.getById = function (req, res) {
-    return res.status(200).json(ExpensesService.getById(req.params.id));
-}
+  ExpensesService.getById(req.params.id)
+    .then((expense) => {
+      res.status(200).json(expense);
+    })
+    .catch((err) => {
+      res.status(500).send({ error: true, message: err });
+    });
+};
 
+// OK 1/2 ( TODO add many )
 exports.addExpense = function (req, res) {
-    if (req.body.expenses) {
-        if (req.body.expenses.length > 0) {
-            const newExpenses = [...req.body.expenses].map((exp, index) => ({
-                ...exp,
-                _id: new Date().getTime() + index,
-            }));
+  if (req.body.bulk) {
+  } else {
+    const expense = req.body.data;
 
-            ExpensesService.addMany(newExpenses);
-            return res.status(200).json({ msg: "Operation Succesfull" });
-        }
-        else {
-            return res.status(204).json({ msg: "Empty array" });
-        }
-    } else if (req.body.expense) {
-        console.log("ADDING ONE");
-        ExpensesService.add({ _id: new Date().getTime(), ...req.body.expense });
-        return res.status(200).json({ msg: "Operation Succesfull", content: req.body.expense });
+    const error = validateExpense(expense);
+
+    if (error) {
+      return res.status(400).send({ error: true, message: error });
     }
-}
 
-// TODO return errors and messages from service methods
+    return ExpensesService.add(expense)
+      .then((createdExpense) => {
+        console.log(createdExpense);
+        res.status(200).send({ createdExpense, error: false });
+      })
+      .catch((err) => {
+        res.status(500).send({ error: true, message: err });
+      });
+  }
+};
 
+// OK
+exports.updateExpense = function (req, res) {
+  const expId = req.body.id;
+  const data = req.body.data;
+
+  const error = validateExpense(req.body.data, true);
+
+  if (error) {
+    return res.status(400).send({ error: true, message: error });
+  }
+
+  return ExpensesService.update(expId, data)
+    .then((updatedExpense) => {
+      console.log(updatedExpense);
+      res.status(200).send({ updatedId: expId, error: false });
+    })
+    .catch((err) => {
+      res.status(500).send({ error: true, message: err });
+    });
+};
+
+// OK
 exports.deleteExpense = function (req, res) {
-    if(req.body.expenses_ids) {
-        ExpensesService.deleteMany(req.body.expenses_ids);
-        return res.status(200).json({ msg: "Operation Succesfull" });
-    }
-    else if(req.body.expense_id) {
-        ExpensesService.delete(req.body.expense_id);
-        return res.status(200).json({ msg: "Operation Succesfull" });
-    }
-}
+  const expId = req.body.id;
 
-exports.updateExpense = function(req, res) {
-    ExpensesService.update(req.body.data)
-    return res.status(200).json({ msg: "Operation Succesfull", content: {} });
-}
-
+  return ExpensesService.delete(expId)
+    .then((deletedExpense) => {
+      console.log(deletedExpense);
+      res.status(200).send({ error: false });
+    })
+    .catch((err) => {
+      res.status(500).send({ error: true, message: err });
+    });
+};
