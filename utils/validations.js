@@ -7,9 +7,11 @@ exports.validateExpense = function (expenseBody, isUpdate) {
     if (!expenseBody) {
       error = "should send data body";
       return error;
-    }
-
-    if (!expenseBody.title || !expenseBody.value || !expenseBody.type) {
+    } else if (
+      !expenseBody.title ||
+      !expenseBody.value ||
+      !expenseBody.category
+    ) {
       error = "fill in all the required fields";
       return error;
     }

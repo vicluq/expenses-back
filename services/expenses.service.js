@@ -14,6 +14,10 @@ class ExpensesService {
     return exp.save();
   }
 
+  addMany(expenses) {
+    return ExpenseModel.insertMany(expenses)
+  }
+
   update(id, data) {
     return ExpenseModel.updateOne({ _id: id }, { ...data });
   }

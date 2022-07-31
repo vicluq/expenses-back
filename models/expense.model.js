@@ -4,11 +4,11 @@ const { Schema } = mongoose;
 
 const expenseModel = new Schema({
   title: String,
+  description: String,
   value: Number,
-  credit: { type: Boolean, default: false },
+  payment: { type: String, default: 'credit' },
   installments: Number,
-  currency: String,
-  type: String,
+  category: String,
   origin: String,
   userId: { type: Schema.Types.ObjectId, ref: "users" },
   accountId: { type: Schema.Types.ObjectId, ref: "Accounts" },
